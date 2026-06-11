@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { getApiBase } from "../api/index";
 import {
   fetchAllData,
   fetchETFQuote,
@@ -21,8 +22,18 @@ function initialState<T>(): CardDataState<T> {
   return { loading: true, error: null, data: null, updatedAt: null };
 }
 
-function successState<T>(data: T, updatedAt: string): CardDataState<T> {
-  return { loading: false, error: null, data, updatedAt };
+function successState<T>(
+  data: T,
+  updatedAt: string,
+  meta?: Pick<CardDataState<T>, "hint" | "stale">,
+): CardDataState<T> {
+  return {
+    loading: false,
+    error: null,
+    data,
+    updatedAt,
+    ...meta,
+  };
 }
 
 function errorState<T>(message: string): CardDataState<T> {
@@ -34,7 +45,10 @@ function cardStateFromOverview<T>(
   fallbackMessage: string,
 ): CardDataState<T> {
   if (result.ok && result.data != null) {
-    return successState(result.data, result.updatedAt);
+    return successState(result.data, result.updatedAt, {
+      hint: result.message,
+      stale: result.stale,
+    });
   }
   return errorState(result.message || fallbackMessage);
 }
@@ -102,6 +116,14 @@ export function useSemiconductorData() {
     setMemory(initialState());
     setFund(initialState());
     setSignal(initialState());
+
+    if (import.meta.env.PROD && !getApiBase()) {
+      applyOverviewTransportError(
+        "未配置后端地址：请在 Vercel 设置环境变量 VITE_API_BASE 为 Railway 后端 URL（无末尾斜杠），保存后重新部署",
+      );
+      setGlobalLoading(false);
+      return;
+    }
 
     try {
       const data = await fetchAllData();

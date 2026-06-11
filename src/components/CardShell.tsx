@@ -7,6 +7,8 @@ interface CardShellProps {
   error: string | null;
   isEmpty: boolean;
   updatedAt?: string | null;
+  hint?: string | null;
+  stale?: boolean;
   onRetry?: () => void;
   className?: string;
   children: ReactNode;
@@ -61,6 +63,8 @@ export default function CardShell({
   error,
   isEmpty,
   updatedAt,
+  hint,
+  stale,
   onRetry,
   className = "",
   children,
@@ -72,7 +76,14 @@ export default function CardShell({
     <article
       className={`flex h-full min-h-[280px] flex-col rounded-xl border border-slate-700/50 bg-[#1e293b] p-5 ${className}`}
     >
-      <h2 className="mb-4 text-sm font-medium text-[#10b981]">{title}</h2>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <h2 className="text-sm font-medium text-[#10b981]">{title}</h2>
+        {stale && hint && (
+          <span className="rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-300">
+            {hint}
+          </span>
+        )}
+      </div>
 
       {loading && <CardSkeleton />}
       {!loading && error && <CardError message={error} onRetry={onRetry} />}

@@ -75,6 +75,8 @@ export default function App() {
                 error={memory.error}
                 data={memory.data}
                 updatedAt={memory.updatedAt}
+                hint={memory.hint}
+                stale={memory.stale}
                 onRetry={retry.memory}
               />
             </CardErrorBoundary>

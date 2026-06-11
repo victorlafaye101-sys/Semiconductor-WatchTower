@@ -159,6 +159,50 @@ taskkill /PID <PID> /F
 
 若直接打开 `dist` 静态文件，开发代理不会生效；生产部署需配置 `VITE_API_BASE` 指向后端地址（见 `.env.example`）。
 
+### Vercel 部署后无数据 / 卡片空白
+
+Vercel **只托管前端静态页面**，不包含 `server/` 里的 Express API。仪表盘上的 **Function Invocations: 0** 是正常现象。
+
+1. **后端部署到 Railway**（或其它 Node 主机）
+   - Root Directory 设为 `server`
+   - Start Command：`npm start`
+   - 配置 `FEISHU_*` 等环境变量（见 `server/.env.example`）
+   - 部署后访问 `https://你的域名/api/health`，应返回 `{"ok":true}`
+
+2. **Vercel 配置 `VITE_API_BASE`**
+   - Settings → Environment Variables
+   - Name：`VITE_API_BASE`
+   - Value：Railway 公网地址，例如 `https://semiconductor-watchtower-production.up.railway.app`（**不要**末尾 `/`）
+   - 勾选 Production（及 Preview 如需要）
+
+3. **重新部署 Vercel**（必须）
+   - `VITE_API_BASE` 在 **构建时** 写入前端，改环境变量后不 Redeploy 不会生效
+
+4. **验证**
+   - 浏览器打开 `https://你的-railway-域名/api/overview`，应有 JSON
+   - 打开 Vercel 站点，Network 里 `/api/overview` 应请求 Railway 域名而非 `*.vercel.app`
+
+### Railway 返回 502 / Application failed to respond
+
+`curl` 命令正确但仍返回 502，说明 **Railway 上 Node 进程没启动成功**。常见原因：
+
+1. **Root Directory 未设为 `server`**（Railway 在仓库根目录找不到 `npm start`）
+2. **`tsx` 在 devDependencies**（Railway 生产环境不装 dev 依赖，`npm start` 会报 `tsx: not found`）
+   - 修复：`tsx` 必须在 `server/package.json` 的 `dependencies` 里，并 **push 到 Git 触发重新部署**
+3. 查看 **Deployments → View Logs**，确认有 `Server running on http://0.0.0.0:xxxx`
+
+本地模拟 Railway 生产安装：
+
+```powershell
+cd server
+$env:NODE_ENV="production"
+Remove-Item -Recurse -Force node_modules
+npm install
+npm start
+```
+
+若报 `tsx 不是内部或外部命令`，就是上述第 2 条问题。
+
 PowerShell 中请使用 `curl.exe` 而非 `curl`（后者是 `Invoke-WebRequest` 别名，行为不同）。
 
 ### Node.js 未安装或版本过低

@@ -49,8 +49,18 @@ export async function enrichEtfQuote(live: EtfQuoteLive): Promise<EtfQuoteData> 
     };
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err);
-    console.warn(`[etf] kline fallback to mock: ${detail}`);
-    return base;
+    console.warn(`[etf] kline unavailable, omitting history: ${detail}`);
+    return {
+      ...base,
+      volume: 0,
+      history30d: [],
+      periods: {
+        "5d": 0,
+        "1m": 0,
+        "3m": 0,
+        "1y": 0,
+      },
+    };
   }
 }
 

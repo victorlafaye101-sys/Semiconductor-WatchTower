@@ -6,6 +6,8 @@ interface PriceFuelProps {
   error: string | null;
   data: MemoryPrice[] | null;
   updatedAt?: string | null;
+  hint?: string | null;
+  stale?: boolean;
   onRetry?: () => void;
 }
 
@@ -32,6 +34,8 @@ export default function PriceFuel({
   error,
   data,
   updatedAt,
+  hint,
+  stale,
   onRetry,
 }: PriceFuelProps) {
   const isEmpty = !data || data.length === 0;
@@ -43,6 +47,8 @@ export default function PriceFuel({
       error={error}
       isEmpty={isEmpty}
       updatedAt={updatedAt}
+      hint={hint}
+      stale={stale}
       onRetry={onRetry}
       className="!h-auto !min-h-0 !px-3 py-5"
       footerExtra={

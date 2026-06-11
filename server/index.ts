@@ -156,7 +156,11 @@ function toOverviewCardSlot<T>(
     ok: true,
     data: result.data,
     updatedAt: result.updatedAt,
-    ...(result.stale ? { stale: true } : {}),
+    ...(result.stale
+      ? { stale: true, message: result.message }
+      : result.code !== 0
+        ? { message: result.message }
+        : {}),
   };
 }
 
@@ -342,5 +346,7 @@ app.use((_req, res) => {
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+  console.log(
+    `[boot] PORT=${process.env.PORT ?? "(unset)"} listening on http://0.0.0.0:${PORT}`,
+  );
 });

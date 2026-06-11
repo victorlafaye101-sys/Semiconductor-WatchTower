@@ -132,7 +132,13 @@ function ETFCardSuccess({ data }: { data: ETFQuote }) {
 
       <div className="mb-1">
         <p className="mb-1 text-xs text-slate-500">近 30 日走势</p>
-        <Sparkline values={data.history30d} />
+        {data.history30d.length >= 2 ? (
+          <Sparkline values={data.history30d} />
+        ) : (
+          <p className="flex h-24 items-center justify-center text-xs text-slate-500">
+            K 线暂不可用，请稍后重试
+          </p>
+        )}
       </div>
 
       <div className="mb-4 flex gap-6 text-xs text-slate-400">
